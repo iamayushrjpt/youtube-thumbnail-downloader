@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Thumbnail Downloader</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      text-align: center;
+      width: 90%;
+      max-width: 450px;
+      animation: fadeIn 0.6s ease-in-out;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+      font-size: 1.6rem;
+    }
+
+    input {
+      width: 90%;
+      padding: 12px 15px;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      font-size: 1rem;
+      outline: none;
+      margin-bottom: 15px;
+      transition: all 0.3s ease;
+    }
+
+    input:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 6px rgba(102, 126, 234, 0.4);
+    }
+
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      background: #667eea;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: #5563c1;
+      transform: translateY(-2px);
+    }
+
+    #thumbnail {
+      margin-top: 20px;
+    }
+
+    #thumbnail img {
+      width: 100%;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h2>YouTube Thumbnail Downloader</h2>
+
+    <input type="text" id="videoUrl" placeholder="Enter YouTube URL" />
+    <button onclick="apicall()">Get Thumbnail</button>
+
+    <div id="thumbnail"></div>
+  </div>
+
+  <script>
+    const apicall = () => {
+      const url = document.getElementById("videoUrl").value;
+      const videoId = getYouTubeVideoId(url);
+
+      if (!videoId) {
+        alert("Invalid YouTube URL");
+        return;
+      }
+
+      const api = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+
+      document.getElementById("thumbnail").innerHTML = `
+        <img src="${api}" alt="Thumbnail" />
+        <button onclick="downloadImage('${api}', '${videoId}.jpg')">Download Thumbnail</button>
+      `;
+    };
+
+    function getYouTubeVideoId(url) {
+      try {
+        let videoId = null;
+        if (url.includes("youtu.be/")) {
+          videoId = url.split("youtu.be/")[1].split(/[?&]/)[0];
+        } else if (url.includes("youtube.com/watch")) {
+          const params = new URL(url).searchParams;
+          videoId = params.get("v");
+        } else if (url.includes("youtube.com/embed/")) {
+          videoId = url.split("embed/")[1].split(/[?&]/)[0];
+        }
+        return videoId;
+      } catch {
+        return null;
+      }
+    }
+
+    async function downloadImage(url, filename) {
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(link.href);
+      } catch (err) {
+        alert("Failed to download image.");
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>
